@@ -1,6 +1,8 @@
 README
 ======
 
+not complete yet
+
 # build
 
     $ autoreconf -ivf
