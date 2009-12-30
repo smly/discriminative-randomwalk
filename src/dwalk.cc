@@ -170,7 +170,6 @@ Dwalk::show_betweenness(const Matrix& mat)
   std::cout.precision(3);
   const unsigned int labelsz = mat.size() - 1;
   const unsigned int nodesz = mat[0].size() - 1;
-  std::cout << "show_betweenness:" << std::endl;
   for (unsigned int i = 1; i <=labelsz; i++) {
     for (unsigned int j = 1; j <= nodesz; j++) {
       std::cout << mat[i][j] << ' ';
@@ -415,10 +414,13 @@ Dwalk::go(
     }
     predict[i] = predict_tmp;
   }
-  show_betweenness(b);
-  show_betweenness(map);
-  show_predict(predict);
 
   // todo
   // saving pref_fn + name
+  std::cout << "[> betweenness:" << std::endl;
+  show_betweenness(b);
+  std::cout << "[> normalized:" << std::endl;
+  show_betweenness(map);
+  std::cout << "[> classfied result using a MAP:" << std::endl;
+  show_predict(predict);
 }
