@@ -334,7 +334,9 @@ Dwalk::get_labeled_nodes (const unsigned int label_id)
   return lmat[label_id];
 }
 void
-Dwalk::go(const unsigned int L)
+Dwalk::go(
+    const unsigned int L,
+    const std::string& pref_fn)
 {
   // calculate forward variable alpha
   // labelsz, nodesz, mat, lmat
@@ -416,4 +418,7 @@ Dwalk::go(const unsigned int L)
   show_betweenness(b);
   show_betweenness(map);
   show_predict(predict);
+
+  // todo
+  // saving pref_fn + name
 }

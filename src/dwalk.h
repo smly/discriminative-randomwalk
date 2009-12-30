@@ -55,7 +55,7 @@ public:
   void show_lmat(const LabelMatrix& lmat);
   void show_betweenness(const Matrix& mat);
   void show_mat(const Matrix& mat);
-  void go(const unsigned int L);
+  void go(const unsigned int L, const std::string& pref_fn);
 };
 
 #endif
