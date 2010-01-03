@@ -12,11 +12,11 @@ class DwalkTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     graph_fn.push_back(
-        std::make_pair("./tests/dataset1/sample.in",
-                       "./tests/dataset1/sample.label"));
+        std::make_pair("./tests/dataset3/activate-knn9.in",
+                       "./tests/dataset3/activate.label"));
     graph_fn.push_back(
-        std::make_pair("./tests/dataset2/sample.in",
-                       "./tests/dataset2/sample.label"));
+        std::make_pair("./tests/dataset3/activate-mat.in",
+                       "./tests/dataset3/activate.label"));
   }
   // virtual void TearDown() {}
   std::vector<std::pair<std::string, std::string> > graph_fn;
@@ -39,8 +39,10 @@ TEST_F(DwalkTest, TestFileLoadCheck)
     const char* graph_filename = graph_fn[i].first.c_str();
     const char* label_filename = graph_fn[i].second.c_str();
     Dwalk d;
-    d.load(graph_filename, label_filename, false);
-    ASSERT_TRUE(true);
+    d.load(graph_filename, label_filename, true);// symm
+    d.show_info();
+    const std::string pref_fn = "output";
+    d.go(10, pref_fn, false);
     ASSERT_TRUE(true);
   }
 }

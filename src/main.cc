@@ -28,15 +28,21 @@ main(int argc, char** argv)
   std::string pref_fn;
   unsigned int prec = PREC_DEFAULT;
   std::string result;
+  unsigned int wl = 5;
+  bool map_pred = false;
+  bool symm = false;
 
   int opt;
   extern char *optarg;
-  while ((opt = getopt(argc, argv, "i:l:o:p:h")) != -1) {
+  while ((opt = getopt(argc, argv, "i:l:o:p:w:msh")) != -1) {
     switch (opt) {
       case 'i': input_fn = std::string(optarg); break;
       case 'l': label_fn = std::string(optarg); break;
       case 'o': pref_fn  = std::string(optarg); break;
       case 'p': prec = atoi(optarg); break;
+      case 'w': wl   = atoi(optarg); break;
+      case 'm': map_pred = true; break;
+      case 's': symm = true; break;
       case 'h':
         std::cout << argv[0] << HELP << std::endl;
         exit(EXIT_SUCCESS);
@@ -47,9 +53,8 @@ main(int argc, char** argv)
   }
 
   Dwalk d;
-  d.load(input_fn.c_str(), label_fn.c_str());
+  d.load(input_fn.c_str(), label_fn.c_str(), symm);
   d.show_info();
-  d.go(4, pref_fn);
-  d.go(10, pref_fn);
+  d.go(wl, pref_fn, map_pred);
   return 0;
 }

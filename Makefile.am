@@ -8,7 +8,7 @@ SUBDIRS = src
 
 if DEVEL
 SUBDIRS += tests
-TESTS += tests/test_simple
+TESTS += tests/test_simple tests/test_realdata
 endif
 
 EXTRA_DIST = README.md dat LICENSE
