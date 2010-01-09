@@ -12,7 +12,6 @@ Dwalk::calc_alpha(
 {
   Matrix alpha(labelsz+1, Array(nodesz+1, 0.0)); // **
   Matrix alpha_next(labelsz+1, Array(nodesz+1, 0.0)); // **
-
   //  show_alphabeta(1, "alpha", alpha_all[1]);
   //  show_alphabeta(2, "alpha", alpha_all[2]);
   //  show_alphabeta(3, "alpha", alpha_all[3]);
@@ -25,6 +24,7 @@ Dwalk::calc_alpha(
       double sum = 0.0;
       for (unsigned int i = 0; i < lmat[lid].size(); i++) {
         const unsigned int did = lmat[lid][i];
+        //        sum += mat[did][sid];
         sum += (1.0 / nysz) * mat[did][sid];
       }
       alpha[lid][sid] = sum;
@@ -256,9 +256,9 @@ Dwalk::load(
       w = atof(s + pos + 1);
       while (pos < len && !isspace(s[pos])) pos++;
       mat[src_id][dst_id] = w;
-      if (symm) {
-        mat[dst_id][src_id] = w;
-      }
+      //      if (symm) {
+      mat[dst_id][src_id] = w;
+      //      }
     }
     ifs.peek();
     src_id++;
@@ -369,42 +369,67 @@ Dwalk::go(
   calc_alpha(alpha_all, mat, lmat, lcmat, L, labelsz, nodesz);
   calc_beta(beta_all, mat, lmat, lcmat, L, labelsz, nodesz);
   //  
-  /*
   // show mat
+  show_alphabeta(1, "alpha", alpha_all[1]);
+  show_alphabeta(2, "alpha", alpha_all[2]);
+  show_alphabeta(3, "alpha", alpha_all[3]);
+
+  show_alphabeta(1, "beta", beta_all[1]);
+  show_alphabeta(2, "beta", beta_all[2]);
+  show_alphabeta(3, "beta", beta_all[3]);
+
   show_lmat(lmat);
   show_lmat(lcmat);
-  */
   // calc bounded dwalks betweeness
   std::cout << "calc bounded dwalks betweeness" << std::endl;
   Matrix b(labelsz+1, Array(nodesz+1, 0.0));
   for (unsigned i = 1; i <= labelsz; i++) {
-    std::cout << "foreach label" << std::endl;
     double denom = 0;
     for (unsigned l = 1; l <= L; l++) {
+      for (unsigned j = 0; j < lmat[i].size(); j++) {
+        const unsigned int node_id = lmat[i][j];
+        denom += alpha_all[l][i][node_id];
+      }
+      /*
       for (unsigned j = 0; j < lcmat[i].size(); j++) {
         const unsigned int node_id = lcmat[i][j];
         denom += alpha_all[l][i][node_id];
       }
+      for (unsigned j = 0; j < lmat[i].size(); j++) {
+        const unsigned int node_id = lmat[i][j];
+        denom += alpha_all[l][i][node_id];
+      }
+      */
     }
     b[i][0] = 1.0 / denom;
+    //    b[i][0] = 1.0;
     for (unsigned int j = 1; j <= nodesz; j++) {
       b[i][j] = b[i][0];
     }
   }
+  /*
+  std::cout << "[> betweenness:" << std::endl;
+  show_betweenness(b);
+  */
   for (unsigned int i = 1; i <= labelsz; i++) {
     for (unsigned int j = 1; j <= nodesz; j++) {
       double sum = 0;
       for (unsigned int l = 2; l <= L; l++) {
         for (unsigned int t = 1; t <= l - 1; t++) {
-          sum += alpha_all[l][i][j] * beta_all[l-t][i][j];
+          sum += alpha_all[t][i][j] * beta_all[l-t][i][j];
           assert(!isnan(sum));
         }
       }
+      // l-o-o-... path
+      /*
+      for (unsigned int l = 1; l <= L; l++) {
+        sum += alpha_all[l][i][j];
+      }
+      */
       b[i][j] *= sum;
     }
   }
 
-  std::cout << "map decision rule" << std::endl;
   // MAP decision rule
   Matrix map(labelsz+1, Array(nodesz+1, 0.0));
   Array prob_y(labelsz+1);
@@ -424,24 +449,22 @@ Dwalk::go(
       if (isnan(map[j][i])) map[j][i] = 0.0; //**
     }
   }
-
   /*
   std::cout << "[> betweenness:" << std::endl;
   show_betweenness(b);
   std::cout << "[> normalized:" << std::endl;
   show_betweenness(map);
   */
-
   for (unsigned int i = 1; i <= labelsz; i++) {
     labeled_nodesz += lmat[i].size();
   }
   for (unsigned int i = 1; i <= labelsz; i++) {
     prob_y[i] = static_cast<double>(lmat[i].size()) / labeled_nodesz;
-    std::cout << "prob_y[" << i << "] = " << prob_y[i] << std::endl;
+    //    std::cout << "prob_y[" << i << "] = " << prob_y[i] << std::endl;
   }
   for (unsigned int i = 1; i <= nodesz; i++) {
     unsigned int predict_tmp = -1;
-    double argmax = -0.1;
+    double argmax = -1;
     for (unsigned int j = 1; j <= labelsz; j++) {
       double tmp = map[j][i];
       if (map_predict) tmp *= prob_y[j];
@@ -451,6 +474,8 @@ Dwalk::go(
       }
     }
     predict[i] = predict_tmp;
+    assert(1 <= predict[i]);
+    assert(predict[i] <= labelsz);
   }
 
   const std::string output_result = pref_fn + ".result";

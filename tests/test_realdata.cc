@@ -17,6 +17,9 @@ class DwalkTest : public ::testing::Test {
     graph_fn.push_back(
         std::make_pair("./tests/dataset3/activate-mat.in",
                        "./tests/dataset3/activate.label"));
+    graph_fn.push_back(
+        std::make_pair("./tests/dataset4/add-knn5.in",
+                       "./tests/dataset4/add.label"));
   }
   // virtual void TearDown() {}
   std::vector<std::pair<std::string, std::string> > graph_fn;
@@ -41,7 +44,7 @@ TEST_F(DwalkTest, TestFileLoadCheck)
     Dwalk d;
     d.load(graph_filename, label_filename, true);// symm
     d.show_info();
-    const std::string pref_fn = "output";
+    const std::string pref_fn = ".tmp";
     d.go(10, pref_fn, false);
     ASSERT_TRUE(true);
   }
