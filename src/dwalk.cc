@@ -370,6 +370,7 @@ Dwalk::go(
   calc_beta(beta_all, mat, lmat, lcmat, L, labelsz, nodesz);
   //  
   // show mat
+  /*
   show_alphabeta(1, "alpha", alpha_all[1]);
   show_alphabeta(2, "alpha", alpha_all[2]);
   show_alphabeta(3, "alpha", alpha_all[3]);
@@ -380,6 +381,7 @@ Dwalk::go(
 
   show_lmat(lmat);
   show_lmat(lcmat);
+  */
   // calc bounded dwalks betweeness
   std::cout << "calc bounded dwalks betweeness" << std::endl;
   Matrix b(labelsz+1, Array(nodesz+1, 0.0));
