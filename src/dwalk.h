@@ -6,6 +6,8 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <set>
+#include <algorithm>
 #include <cmath>
 #include <boost/algorithm/string.hpp>
 
@@ -13,6 +15,16 @@ typedef std::vector<double> Array;
 typedef std::vector<Array> Matrix;
 typedef std::vector<unsigned int> LabelArray;
 typedef std::vector<LabelArray> LabelMatrix;
+typedef std::set<unsigned int> NodeSet;
+
+template <class T>
+class IncrementalGen {
+public:
+  IncrementalGen (T t) : curr(t) { }
+  T operator () () { return curr++; }
+private:
+  T curr;
+};
 
 class Dwalk
 {
@@ -49,6 +61,15 @@ public:
       const unsigned int L,
       const unsigned int labelsz,
       const unsigned int nodesz);
+  void calc_gamma(
+      std::vector<Matrix>& beta_v,
+      const Matrix& mat,
+      const LabelMatrix& lmat,
+      const LabelMatrix& lcmat,
+      const NodeSet& uset,
+      const unsigned int L,
+      const unsigned int labelsz,
+      const unsigned int nodesz);
   void show_predict(const std::vector<unsigned int>& predict);
   void show_alphabeta(
       const unsigned int t,
@@ -60,6 +81,9 @@ public:
   void go(const unsigned int L,
           const std::string& pref_fn,
           const bool map_predict);
+  void go2(const unsigned int L,
+           const std::string& pref_fn,
+           const bool map_predict);
 };
 
 #endif
