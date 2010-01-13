@@ -421,13 +421,14 @@ Dwalk::go2(
       for (unsigned int y1 = 1; y1 <= labelsz; y1++) {
         if (y1 == i) continue;
         // for (4)
+        /*
         for (unsigned int l = 2; l <= L; l++) {
           for (unsigned int t = 1; t <= l - 1; t++) {
             denom += alpha_all[t][y1][j] * beta_all[l-t][y1][j];
             assert(!isnan(denom));
           }
         }
-        /*
+        */
         // end (4)
         for (unsigned int y2 = 1; y2 <= labelsz; y2++) {
           if (y2 == i) continue;
@@ -440,7 +441,6 @@ Dwalk::go2(
           }
           // end (3)
         }
-        */
       }
     }
     b[i][0] = denom;
@@ -605,8 +605,8 @@ Dwalk::go(
       }
       */
     }
-    b[i][0] = 1.0 / denom;
-    //    b[i][0] = 1.0;
+    //    b[i][0] = 1.0 / denom;
+    b[i][0] = 1.0;
     for (unsigned int j = 1; j <= nodesz; j++) {
       b[i][j] = b[i][0];
     }
