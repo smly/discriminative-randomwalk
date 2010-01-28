@@ -67,8 +67,8 @@ Dwalk::calc_beta(
     const unsigned int nodesz)
 {
   // calculate backward variable beta
-  Matrix beta(labelsz+1, Array(nodesz+1));
-  Matrix beta_next(labelsz+1, Array(nodesz+1));
+  Matrix beta(labelsz+1, Array(nodesz+1, 0.0));
+  Matrix beta_next(labelsz+1, Array(nodesz+1, 0.0));
   // beta first
   std::cout << "calculate beta variables:  " << std::flush;
   for (unsigned lid = 1; lid <= labelsz; lid++) {
@@ -115,16 +115,41 @@ Dwalk::calc_gamma(
     const unsigned int labelsz,
     const unsigned int nodesz)
 {
-  Matrix gamma(labelsz+1, Array(nodesz+1));
-  Matrix gamma_next(labelsz+1, Array(nodesz+1));
+  Matrix gamma(labelsz+1, Array(nodesz+1, 0.0));
+  Matrix gamma_next(labelsz+1, Array(nodesz+1, 0.0));
   // gamma first
-  // calc uset
-  /*
   std::cout << "calculate gamma variables: " << std::flush;
-  for (NodeSet::Iterator it = uset.begin(); it != uset.end(); it++) {
-    *it 
+  for (unsigned lid = 1; lid <= labelsz; lid++) {
+    for (unsigned sid = 1; sid <= nodesz; sid++) {
+      double sum = 0.0;
+      for (NodeSet::iterator it = uset.begin(); it != uset.end(); it++) {
+        const unsigned int did = *it;
+        sum += mat[sid][did];
+        assert(isnan(sum) == 0);
+      }
+      gamma[lid][sid] = sum;
+    }
   }
-  */
+  std::cout << "." << std::flush;
+  gamma_v[1] = gamma;
+  // gamma next
+  for (unsigned int iter = 2; iter <= L; iter++) {
+    for (unsigned int lid = 1; lid <= labelsz; lid++) {
+      for (unsigned int sid = 1; sid <= nodesz; sid++) {
+        double sum = 0.0;
+        for (unsigned int i = 0; i < lcmat[lid].size(); i++) {
+          const unsigned int did = lcmat[lid][i];
+          sum += gamma[lid][did] * mat[sid][did];
+          assert(isnan(sum) == 0);
+        }
+        gamma_next[lid][sid] = sum;
+      }
+    }
+    gamma = gamma_next;
+    gamma_v[iter] = gamma;
+    std::cout << "." << std::flush;
+  }
+  std::cout << "done" << std::endl;
 }
 
 void
@@ -390,6 +415,7 @@ Dwalk::cv(
 
 }
 */
+
 void
 Dwalk::go2(
     const unsigned int L,
@@ -409,58 +435,25 @@ Dwalk::go2(
   uset.swap(dummyset);
   std::vector<Matrix> alpha_all(L+1);
   std::vector<Matrix> beta_all(L+1);
+  std::vector<Matrix> gamma_all(L+1);
   calc_alpha(alpha_all, mat, lmat, lcmat, L, labelsz, nodesz);
   calc_beta(beta_all,   mat, lmat, lcmat, L, labelsz, nodesz);
+  calc_gamma(gamma_all, mat, lmat, lcmat, uset, L, labelsz, nodesz);
   std::cout << "calc bounded dwalks betweenness" << std::endl;
   Matrix b(labelsz+1, Array(nodesz + 1, 0.0));
   // calc denom and put b[i][0]
-  for (unsigned i = 1; i <= labelsz; i++) {
-    double denom = 0;
-    for (unsigned int j = 1; j <= nodesz; j++) {
-      // loop for (3, 4)
-      for (unsigned int y1 = 1; y1 <= labelsz; y1++) {
-        if (y1 == i) continue;
-        // for (4)
-        /*
-        for (unsigned int l = 2; l <= L; l++) {
-          for (unsigned int t = 1; t <= l - 1; t++) {
-            denom += alpha_all[t][y1][j] * beta_all[l-t][y1][j];
-            assert(!isnan(denom));
-          }
-        }
-        */
-        // end (4)
-        for (unsigned int y2 = 1; y2 <= labelsz; y2++) {
-          if (y2 == i) continue;
-          // for (3)
-          for (unsigned int l = 2; l <= L; l++) {
-            for (unsigned int t = 1; t <= l - 1; t++) {
-              denom += alpha_all[t][y1][j] * beta_all[l-t][y2][j];
-              assert(!isnan(denom));
-            }
-          }
-          // end (3)
-        }
-      }
-    }
-    b[i][0] = denom;
-    for (unsigned int j = 1; j <= nodesz; j++) {
-      b[i][j] = b[i][0];
-    }
-  }
-  // calc b
   for (unsigned int i = 1; i <= labelsz; i++) {
     for (unsigned int j = 1; j <= nodesz; j++) {
       double sum = 0;
       for (unsigned int l = 2; l <= L; l++) {
         for (unsigned int t = 1; t <= l - 1; t++) {
-          sum += alpha_all[t][i][j] * beta_all[l-t][i][j]; // (1)
-          assert(!isnan(sum));
+          double tmp = beta_all[l-t][i][j] / (beta_all[l-t][i][j] + gamma_all[l-t][i][j]);
+          if (!isnan(tmp)) {
+            sum += tmp;
+          }
         }
       }
-      b[i][j] += sum;
-      b[i][j] = 1.0 / b[i][j];
-      b[i][j] *= sum;
+      b[i][j] = sum;
     }
   }
 
@@ -560,9 +553,6 @@ Dwalk::go(
                  lset.begin(), lset.end(),
                  std::inserter(dummyset, dummyset.end()));
   uset.swap(dummyset);
-  for (NodeSet::iterator it = uset.begin(); it != uset.end(); it++) {
-    std::cout << *it << std::endl;
-  }
   // calculate forward variable alpha
   // labelsz, nodesz, mat, lmat
   std::vector<Matrix> alpha_all(L+1);
@@ -580,6 +570,11 @@ Dwalk::go(
   show_alphabeta(1, "beta", beta_all[1]);
   show_alphabeta(2, "beta", beta_all[2]);
   show_alphabeta(3, "beta", beta_all[3]);
+  /*
+  show_alphabeta(1, "gamma", gamma_all[1]);
+  show_alphabeta(2, "gamma", gamma_all[2]);
+  show_alphabeta(3, "gamma", gamma_all[3]);
+  */
   /*
   show_lmat(lmat);
   show_lmat(lcmat);
