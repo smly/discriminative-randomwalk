@@ -54,11 +54,11 @@ main(int argc, char** argv)
     }
   }
 
-  Dwalk d;
+  gll::Dwalk d;
   d.load(input_fn.c_str(), label_fn.c_str(), symm);
   d.show_info();
   if (fixed_algorithm) {
-    d.go2(wl, pref_fn, map_pred);
+    d.go3(wl, pref_fn, map_pred);
   } else {
     d.go(wl, pref_fn, map_pred);
   }
