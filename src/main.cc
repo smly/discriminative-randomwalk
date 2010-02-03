@@ -58,9 +58,9 @@ main(int argc, char** argv)
   d.load(input_fn.c_str(), label_fn.c_str(), symm);
   d.show_info();
   if (fixed_algorithm) {
-    d.go3(wl, pref_fn, map_pred);
+    d.fixed_algorithm_A(wl, pref_fn, map_pred);
   } else {
-    d.go(wl, pref_fn, map_pred);
+    d.original(wl, pref_fn, true, map_pred);
   }
   return 0;
 }

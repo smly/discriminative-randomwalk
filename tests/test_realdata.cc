@@ -45,7 +45,7 @@ TEST_F(DwalkTest, TestFileLoadCheck)
     d.load(graph_filename, label_filename, true);// symm
     d.show_info();
     const std::string pref_fn = ".tmp";
-    d.go(10, pref_fn, false);
+    d.original(10, pref_fn, true, false);
     ASSERT_TRUE(true);
   }
 }
