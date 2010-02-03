@@ -28,6 +28,10 @@ private:
   T curr;
 };
 
+struct Alpha {}; // alpha forward variable
+struct Beta {}; // beta backward variable
+struct Gamma {}; // gamma backward variable
+
 class Dwalk
 {
 public:
@@ -73,6 +77,7 @@ private:
   Matrix mat;
   LabelMatrix lmat, lcmat;
 
+  // private func
   void normalize(Matrix& mat);
   void calc_alpha(
       std::vector<Matrix>& alpha_v,
