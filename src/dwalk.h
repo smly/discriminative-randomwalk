@@ -69,24 +69,21 @@ public:
 
 private:
   unsigned int nodesz_, lnodesz_, unodesz_;
-  unsigned int labelsz;
+  unsigned int labelsz_;
   Matrix mat;
   LabelMatrix lmat, lcmat;
 
   void normalize(Matrix& mat);
   void calc_alpha(
       std::vector<Matrix>& alpha_v,
-      const unsigned int bounded_length,
-      const unsigned int labelsz);
+      const unsigned int bounded_length);
   void calc_beta(
       std::vector<Matrix>& beta_v,
-      const unsigned int bounded_length,
-      const unsigned int labelsz);
+      const unsigned int bounded_length);
   void calc_gamma(
       std::vector<Matrix>& beta_v,
       const NodeSet& uset,
-      const unsigned int bounded_length,
-      const unsigned int labelsz);
+      const unsigned int bounded_length);
   void decision(
       const Matrix& b,
       const std::string& pref_fn,

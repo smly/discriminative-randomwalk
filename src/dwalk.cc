@@ -5,20 +5,20 @@ namespace gll {
 void
 Dwalk::calc_alpha(
     std::vector<Matrix>& alpha_v,
-    const unsigned int bounded_length,
-    const unsigned int labelsz)
+    const unsigned int bounded_length)
 {
-  Matrix alpha(labelsz + 1, Array(nodesz_ + 1, 0.0));
-  Matrix alpha_next(labelsz + 1, Array(nodesz_ + 1, 0.0));
+  Matrix alpha(labelsz_ + 1, Array(nodesz_ + 1, 0.0));
+  Matrix alpha_next(labelsz_ + 1, Array(nodesz_ + 1, 0.0));
   // calc \alpha^y(q,1)
   std::cout << "calculate alpha variables: ";
-  for (unsigned int lid = 1; lid <= labelsz; lid++) {
+  for (unsigned int lid = 1; lid <= labelsz_; lid++) {
     for (unsigned int sid = 1; sid <= nodesz_; sid++) {
       const unsigned int nysz = lmat[lid].size();
       double sum = 0.0;
       for (unsigned int i = 0; i < lmat[lid].size(); i++) {
         const unsigned int did = lmat[lid][i];
         sum += (1.0 / nysz) * mat[did][sid];
+        assert(isnan(sum) == 0);
       }
       alpha[lid][sid] = sum;
     }
@@ -26,7 +26,7 @@ Dwalk::calc_alpha(
   std::cout << "." << std::flush;
   alpha_v[1] = alpha;
   for (unsigned int iter = 2; iter <= bounded_length; iter++) {
-    for (unsigned int lid = 1; lid <= labelsz; lid++) {
+    for (unsigned int lid = 1; lid <= labelsz_; lid++) {
       for (unsigned int sid = 1; sid <= nodesz_; sid++) {
         double sum = 0.0;
         for (unsigned int i = 0; i < lcmat[lid].size(); i++) {
@@ -48,14 +48,13 @@ Dwalk::calc_alpha(
 void
 Dwalk::calc_beta(
     std::vector<Matrix>& beta_v,
-    const unsigned int bounded_length,
-    const unsigned int labelsz)
+    const unsigned int bounded_length)
 {
-  Matrix beta(labelsz+1, Array(nodesz_+1, 0.0));
-  Matrix beta_next(labelsz+1, Array(nodesz_+1, 0.0));
+  Matrix beta(labelsz_+1, Array(nodesz_+1, 0.0));
+  Matrix beta_next(labelsz_+1, Array(nodesz_+1, 0.0));
   // calc \beta^y(q,1)
   std::cout << "calculate beta variables:  " << std::flush;
-  for (unsigned lid = 1; lid <= labelsz; lid++) {
+  for (unsigned lid = 1; lid <= labelsz_; lid++) {
     for (unsigned sid = 1; sid <= nodesz_; sid++) {
       double sum = 0.0;
       for (unsigned int i = 0; i < lmat[lid].size(); i++) {
@@ -69,7 +68,7 @@ Dwalk::calc_beta(
   std::cout << "." << std::flush;
   beta_v[1] = beta;
   for (unsigned int iter = 2; iter <= bounded_length; iter++) {
-    for (unsigned int lid = 1; lid <= labelsz; lid++) {
+    for (unsigned int lid = 1; lid <= labelsz_; lid++) {
       for (unsigned int sid = 1; sid <= nodesz_; sid++) {
         double sum = 0.0;
         for (unsigned int i = 0; i < lcmat[lid].size(); i++) {
@@ -91,14 +90,13 @@ void
 Dwalk::calc_gamma(
     std::vector<Matrix>& gamma_v,
     const NodeSet& uset,
-    const unsigned int bounded_length,
-    const unsigned int labelsz)
+    const unsigned int bounded_length)
 {
-  Matrix gamma(labelsz+1, Array(nodesz_+1, 0.0));
-  Matrix gamma_next(labelsz+1, Array(nodesz_+1, 0.0));
+  Matrix gamma(labelsz_+1, Array(nodesz_+1, 0.0));
+  Matrix gamma_next(labelsz_+1, Array(nodesz_+1, 0.0));
   // calc \gamma^y(q,1)
   std::cout << "calculate gamma variables: " << std::flush;
-  for (unsigned lid = 1; lid <= labelsz; lid++) {
+  for (unsigned lid = 1; lid <= labelsz_; lid++) {
     for (unsigned sid = 1; sid <= nodesz_; sid++) {
       double sum = 0.0;
       for (NodeSet::iterator it = uset.begin(); it != uset.end(); it++) {
@@ -112,7 +110,7 @@ Dwalk::calc_gamma(
   std::cout << "." << std::flush;
   gamma_v[1] = gamma;
   for (unsigned int iter = 2; iter <= bounded_length; iter++) {
-    for (unsigned int lid = 1; lid <= labelsz; lid++) {
+    for (unsigned int lid = 1; lid <= labelsz_; lid++) {
       for (unsigned int sid = 1; sid <= nodesz_; sid++) {
         double sum = 0.0;
         for (unsigned int i = 0; i < lcmat[lid].size(); i++) {
@@ -206,7 +204,7 @@ Dwalk::load(
   }
   ifs.close();
   ifs.open(label_fn);
-  labelsz = 0;
+  labelsz_ = 0;
   lnodesz_ = 0;
   unodesz_ = 0;
   unsigned int nodesz_ = 0;
@@ -219,8 +217,8 @@ Dwalk::load(
     nodesz_++;
     if (len != 1 || (len >= 1 && isdigit(s[0]))) {
       unsigned int label = atoi(s);
-      if (label > labelsz) {
-        labelsz = label;
+      if (label > labelsz_) {
+        labelsz_ = label;
       }
       lnodesz_++;
     } else {
@@ -230,8 +228,8 @@ Dwalk::load(
   }
   ifs.close();
   assert(lnodesz_ + unodesz_ == nodesz_);
-  lmat  = LabelMatrix(labelsz+1, LabelArray());
-  lcmat = LabelMatrix(labelsz+1, LabelArray());
+  lmat  = LabelMatrix(labelsz_+1, LabelArray());
+  lcmat = LabelMatrix(labelsz_+1, LabelArray());
 
   ifs.open(label_fn);
   nodesz_ = 0;
@@ -248,7 +246,7 @@ Dwalk::load(
     }
   }
   ifs.close();
-  for (unsigned int lid = 1; lid <= labelsz; lid++) {
+  for (unsigned int lid = 1; lid <= labelsz_; lid++) {
     unsigned int indx = 0;
     const unsigned int indx_max = lmat[lid].size() - 1;
     for (unsigned int nid = 1; nid <= nodesz_; nid++) {
@@ -283,31 +281,31 @@ Dwalk::decision(
     const std::string& pref_fn,
     const bool map_predict)
 {
-  Matrix map(labelsz+1, Array(nodesz_+1, 0.0));
-  Array prob_y(labelsz+1);
+  Matrix map(labelsz_+1, Array(nodesz_+1, 0.0));
+  Array prob_y(labelsz_+1);
   std::vector<unsigned int> predict(nodesz_+1);
 
   for (unsigned int i = 1; i <= nodesz_; i++) {
     double sum = 0.0;
-    for (unsigned int j = 1; j <= labelsz; j++) {
+    for (unsigned int j = 1; j <= labelsz_; j++) {
       sum += b[j][i];
     }
     map[0][i] = sum;
   }
   for (unsigned int i = 1; i <= nodesz_; i++) {
-    for (unsigned int j = 1; j <= labelsz; j++) {
+    for (unsigned int j = 1; j <= labelsz_; j++) {
       map[j][i] = b[j][i] / map[0][i];
       if (isnan(map[j][i])) map[j][i] = 0.0; //**
     }
   }
   // predict
-  for (unsigned int i = 1; i <= labelsz; i++) {
+  for (unsigned int i = 1; i <= labelsz_; i++) {
     prob_y[i] = static_cast<double>(lmat[i].size()) / lnodesz_;
   }
   for (unsigned int i = 1; i <= nodesz_; i++) {
     unsigned int predict_tmp = -1;
     double argmax = -1;
-    for (unsigned int j = 1; j <= labelsz; j++) {
+    for (unsigned int j = 1; j <= labelsz_; j++) {
       double tmp = map[j][i];
       if (map_predict) tmp *= prob_y[j];
       if (argmax < tmp) {
@@ -317,7 +315,7 @@ Dwalk::decision(
     }
     predict[i] = predict_tmp;
     assert(1 <= predict[i]);
-    assert(predict[i] <= labelsz);
+    assert(predict[i] <= labelsz_);
   }
   // output
   const std::string output_result = pref_fn + ".result";
@@ -332,7 +330,7 @@ Dwalk::decision(
   ofs.close();
   ofs.open(output_weight.c_str());
   for (unsigned int i = 1; i <= nodesz_; i++) {
-    for (unsigned int j = 1; j <= labelsz; j++) {
+    for (unsigned int j = 1; j <= labelsz_; j++) {
       if (j != 1) ofs << ' ';
       double tmp = map[j][i];
       if (map_predict) tmp *= prob_y[j];
@@ -361,7 +359,7 @@ Dwalk::original(
   // calc uset and lset
   NodeSet uset, lset, dummyset;
   std::vector<unsigned int> dummy(nodesz_);
-  for (unsigned int lid = 1; lid <= labelsz; lid++) {
+  for (unsigned int lid = 1; lid <= labelsz_; lid++) {
     lset.insert(lmat[lid].begin(), lmat[lid].end());
   }
   generate(dummy.begin(), dummy.end(), IncrementalGen<unsigned int>(1));
@@ -371,15 +369,15 @@ Dwalk::original(
                  std::inserter(dummyset, dummyset.end()));
   uset.swap(dummyset);
   // calculate forward variable alpha
-  // labelsz, nodesz, mat, lmat
+  // labelsz_, nodesz, mat, lmat
   std::vector<Matrix> alpha_var(bounded_length + 1);
   std::vector<Matrix> beta_var(bounded_length + 1);
-  calc_alpha(alpha_var, bounded_length, labelsz);
-  calc_beta (beta_var,  bounded_length, labelsz);
+  calc_alpha(alpha_var, bounded_length);
+  calc_beta (beta_var,  bounded_length);
   // calc bounded dwalks betweeness
   std::cout << "calc bounded dwalks betweeness" << std::endl;
-  Matrix b(labelsz+1, Array(nodesz_+1, 0.0));
-  for (unsigned i = 1; i <= labelsz; i++) {
+  Matrix b(labelsz_+1, Array(nodesz_+1, 0.0));
+  for (unsigned i = 1; i <= labelsz_; i++) {
     if (denom_flag) {
       // calc denom factor
       double denom = 0;
@@ -398,7 +396,7 @@ Dwalk::original(
       b[i][j] = b[i][0];
     }
   }
-  for (unsigned int i = 1; i <= labelsz; i++) {
+  for (unsigned int i = 1; i <= labelsz_; i++) {
     for (unsigned int j = 1; j <= nodesz_; j++) {
       double sum = 0;
       for (unsigned int l = 2; l <= bounded_length; l++) {
@@ -430,7 +428,7 @@ Dwalk::fixed_algorithm_A(
 {
   NodeSet uset, lset, dummyset;
   std::vector<unsigned int> dummy(nodesz_);
-  for (unsigned int lid = 1; lid <= labelsz; lid++) {
+  for (unsigned int lid = 1; lid <= labelsz_; lid++) {
     lset.insert(lmat[lid].begin(), lmat[lid].end());
   }
   generate(dummy.begin(), dummy.end(), IncrementalGen<unsigned int>(1));
@@ -439,37 +437,37 @@ Dwalk::fixed_algorithm_A(
                  lset.begin(), lset.end(),
                  std::inserter(dummyset, dummyset.end()));
   uset.swap(dummyset);
-  std::vector<Matrix> alpha_all(bounded_length + 1);
-  std::vector<Matrix> beta_all(bounded_length + 1);
-  std::vector<Matrix> gamma_all(bounded_length + 1);
-  calc_alpha(alpha_all, bounded_length, labelsz);
-  calc_beta (beta_all,  bounded_length, labelsz);
-  calc_gamma(gamma_all, uset, bounded_length, labelsz);
+  std::vector<Matrix> alpha_var(bounded_length + 1);
+  std::vector<Matrix> beta_var(bounded_length + 1);
+  std::vector<Matrix> gamma_var(bounded_length + 1);
+  calc_alpha(alpha_var, bounded_length);
+  calc_beta (beta_var,  bounded_length);
+  calc_gamma(gamma_var, uset, bounded_length);
   std::cout << "proposed method: " << std::endl;
   std::cout << "calc bounded dwalks betweenness" << std::endl;
-  Matrix b(labelsz+1, Array(nodesz_ + 1, 0.0));
+  Matrix b(labelsz_+1, Array(nodesz_ + 1, 0.0));
   // calc denom and put b[i][0]
-  for (unsigned i = 1; i <= labelsz; i++) {
+  for (unsigned i = 1; i <= labelsz_; i++) {
     for (unsigned int j = 1; j <= nodesz_; j++) {
       double denom = 0;
       for (unsigned l = 2; l <= bounded_length; l++) {
         for (unsigned t = 1; t <= l - 1; t++) {
-          denom += alpha_all[l][i][j] * beta_all[l-t][i][j];
+          denom += alpha_var[l][i][j] * beta_var[l-t][i][j];
         }
       }
       for (unsigned int t = 1; t <= bounded_length - 1; t++) {
-        denom += alpha_all[t][i][j] * gamma_all[bounded_length-t][i][j];
+        denom += alpha_var[t][i][j] * gamma_var[bounded_length-t][i][j];
       }
       b[i][j] = 1.0 / denom;
     }
   }
   //
-  for (unsigned int i = 1; i <= labelsz; i++) {
+  for (unsigned int i = 1; i <= labelsz_; i++) {
     for (unsigned int j = 1; j <= nodesz_; j++) {
       double sum = 0;
       for (unsigned int l = 2; l <= bounded_length; l++) {
         for (unsigned int t = 1; t <= l - 1; t++) {
-          sum += alpha_all[t][i][j] * beta_all[l-t][i][j];
+          sum += alpha_var[t][i][j] * beta_var[l-t][i][j];
         }
       }
       b[i][j] *= sum;
@@ -490,7 +488,7 @@ Dwalk::fixed_algorithm_B(
 {
   NodeSet uset, lset, dummyset;
   std::vector<unsigned int> dummy(nodesz_);
-  for (unsigned int lid = 1; lid <= labelsz; lid++) {
+  for (unsigned int lid = 1; lid <= labelsz_; lid++) {
     lset.insert(lmat[lid].begin(), lmat[lid].end());
   }
   generate(dummy.begin(), dummy.end(), IncrementalGen<unsigned int>(1));
@@ -499,21 +497,21 @@ Dwalk::fixed_algorithm_B(
                   lset.begin(), lset.end(),
                   std::inserter(dummyset, dummyset.end()));
   uset.swap(dummyset);
-  std::vector<Matrix> alpha_all(bounded_length + 1);
-  std::vector<Matrix> beta_all(bounded_length + 1);
-  std::vector<Matrix> gamma_all(bounded_length + 1);
-  calc_alpha(alpha_all, bounded_length, labelsz);
-  calc_beta(beta_all,   bounded_length, labelsz);
-  calc_gamma(gamma_all, uset, bounded_length, labelsz);
+  std::vector<Matrix> alpha_var(bounded_length + 1);
+  std::vector<Matrix> beta_var(bounded_length + 1);
+  std::vector<Matrix> gamma_var(bounded_length + 1);
+  calc_alpha(alpha_var, bounded_length);
+  calc_beta(beta_var,   bounded_length);
+  calc_gamma(gamma_var, uset, bounded_length);
   std::cout << "calc bounded dwalks betweenness" << std::endl;
-  Matrix b(labelsz+1, Array(nodesz_ + 1, 0.0));
+  Matrix b(labelsz_+1, Array(nodesz_ + 1, 0.0));
   // calc denom and put b[i][0]
-  for (unsigned int i = 1; i <= labelsz; i++) {
+  for (unsigned int i = 1; i <= labelsz_; i++) {
     for (unsigned int j = 1; j <= nodesz_; j++) {
       double sum = 0;
       for (unsigned int l = 2; l <= bounded_length; l++) {
         for (unsigned int t = 1; t <= l - 1; t++) {
-          double tmp = beta_all[l-t][i][j] / (beta_all[l-t][i][j] + gamma_all[l-t][i][j]);
+          double tmp = beta_var[l-t][i][j] / (beta_var[l-t][i][j] + gamma_var[l-t][i][j]);
           if (!isnan(tmp)) {
             sum += tmp;
           }
