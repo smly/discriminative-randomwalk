@@ -59,11 +59,10 @@ public:
   void showInfo() const;
   void showAlphabeta(
       const unsigned int t,
-      const std::string label,
-      const Matrix& mat) const;
-  void showMat(const Matrix& mat) const;
-  void showLmat(const LabelMatrix& lmat) const;
-  void showBetweenness(const Matrix& mat) const;
+      const std::string label) const;
+  void showMat() const;
+  void showLmat() const;
+  void showBetweenness() const;
   void showPredict(
       const std::vector<unsigned int>& predict) const;
   const LabelArray getComplementLabeledNodes (
@@ -74,8 +73,8 @@ public:
 private:
   unsigned int nodesz_, lnodesz_, unodesz_;
   unsigned int labelsz_;
-  Matrix mat;
-  LabelMatrix lmat, lcmat;
+  Matrix mat_;
+  LabelMatrix lmat_, lcmat_;
   // alpha forward variables
   std::vector<Matrix> alpha_;
   // beta backward variables
@@ -84,7 +83,7 @@ private:
   std::vector<Matrix> gamma_;
 
   // private func
-  void normalize(Matrix& mat);
+  void normalize();
   void calcAlpha(
       const unsigned int bounded_length);
   void calcBeta(

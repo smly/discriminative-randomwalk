@@ -19,11 +19,11 @@ void Dwalk::calcAlpha(
   std::cout << "calculate alpha variables: ";
   for (unsigned int lid = 1; lid <= labelsz_; lid++) {
     for (unsigned int sid = 1; sid <= nodesz_; sid++) {
-      const unsigned int nysz = lmat[lid].size();
+      const unsigned int nysz = lmat_[lid].size();
       double sum = 0.0;
-      for (unsigned int i = 0; i < lmat[lid].size(); i++) {
-        const unsigned int did = lmat[lid][i];
-        sum += (1.0 / nysz) * mat[did][sid];
+      for (unsigned int i = 0; i < lmat_[lid].size(); i++) {
+        const unsigned int did = lmat_[lid][i];
+        sum += (1.0 / nysz) * mat_[did][sid];
         assert(isnan(sum) == 0);
       }
       alpha[lid][sid] = sum;
@@ -35,9 +35,9 @@ void Dwalk::calcAlpha(
     for (unsigned int lid = 1; lid <= labelsz_; lid++) {
       for (unsigned int sid = 1; sid <= nodesz_; sid++) {
         double sum = 0.0;
-        for (unsigned int i = 0; i < lcmat[lid].size(); i++) {
-          const unsigned int did = lcmat[lid][i];
-          sum += alpha[lid][did] * mat[did][sid];
+        for (unsigned int i = 0; i < lcmat_[lid].size(); i++) {
+          const unsigned int did = lcmat_[lid][i];
+          sum += alpha[lid][did] * mat_[did][sid];
           assert(isnan(sum) == 0);
         }
         alpha_next[lid][sid] = sum;
@@ -61,9 +61,9 @@ void Dwalk::calcBeta(
   for (unsigned lid = 1; lid <= labelsz_; lid++) {
     for (unsigned sid = 1; sid <= nodesz_; sid++) {
       double sum = 0.0;
-      for (unsigned int i = 0; i < lmat[lid].size(); i++) {
-        const unsigned int did = lmat[lid][i];
-        sum += mat[sid][did];
+      for (unsigned int i = 0; i < lmat_[lid].size(); i++) {
+        const unsigned int did = lmat_[lid][i];
+        sum += mat_[sid][did];
         assert(isnan(sum) == 0);
       }
       beta[lid][sid] = sum;
@@ -75,9 +75,9 @@ void Dwalk::calcBeta(
     for (unsigned int lid = 1; lid <= labelsz_; lid++) {
       for (unsigned int sid = 1; sid <= nodesz_; sid++) {
         double sum = 0.0;
-        for (unsigned int i = 0; i < lcmat[lid].size(); i++) {
-          const unsigned int did = lcmat[lid][i];
-          sum += beta[lid][did] * mat[sid][did];
+        for (unsigned int i = 0; i < lcmat_[lid].size(); i++) {
+          const unsigned int did = lcmat_[lid][i];
+          sum += beta[lid][did] * mat_[sid][did];
           assert(isnan(sum) == 0);
         }
         beta_next[lid][sid] = sum;
@@ -103,7 +103,7 @@ void Dwalk::calcGamma(
       double sum = 0.0;
       for (NodeSet::iterator it = uset.begin(); it != uset.end(); it++) {
         const unsigned int did = *it;
-        sum += mat[sid][did];
+        sum += mat_[sid][did];
         assert(isnan(sum) == 0);
       }
       gamma[lid][sid] = sum;
@@ -115,9 +115,9 @@ void Dwalk::calcGamma(
     for (unsigned int lid = 1; lid <= labelsz_; lid++) {
       for (unsigned int sid = 1; sid <= nodesz_; sid++) {
         double sum = 0.0;
-        for (unsigned int i = 0; i < lcmat[lid].size(); i++) {
-          const unsigned int did = lcmat[lid][i];
-          sum += gamma[lid][did] * mat[sid][did];
+        for (unsigned int i = 0; i < lcmat_[lid].size(); i++) {
+          const unsigned int did = lcmat_[lid][i];
+          sum += gamma[lid][did] * mat_[sid][did];
           assert(isnan(sum) == 0);
         }
         gamma_next[lid][sid] = sum;
@@ -131,18 +131,18 @@ void Dwalk::calcGamma(
 }
 
 void
-Dwalk::normalize(Matrix& mat)
+Dwalk::normalize()
 {
-  const unsigned int nodesz_ = mat.size() - 1;
+  const unsigned int nodesz_ = mat_.size() - 1;
   for (unsigned int i = 1; i <= nodesz_; i++) {
     double sum = 0.0;
     for (unsigned int j = 1; j <= nodesz_; j++) {
-      sum += mat[i][j];
+      sum += mat_[i][j];
     }
     for (unsigned int j = 1; j <= nodesz_; j++) {
-      mat[i][j] /= sum;
-      if (isnan(mat[i][j])) {
-        mat[i][j] = 0.0;
+      mat_[i][j] /= sum;
+      if (isnan(mat_[i][j])) {
+        mat_[i][j] = 0.0;
       }
     }
   }
@@ -173,7 +173,7 @@ Dwalk::load(
   ifs.close();
 
   // [dummy, 1, .., nodesz]
-  mat = Matrix(nodesz_+1, Array(nodesz_+1, 0.0)); // **
+  mat_ = Matrix(nodesz_+1, Array(nodesz_+1, 0.0)); // **
   ifs.open(graph_fn);
   unsigned int src_id = 1;
   while (!ifs.eof()) {
@@ -196,9 +196,9 @@ Dwalk::load(
       while (pos + 1 < len && s[pos] != ':') pos++;
       w = atof(s + pos + 1);
       while (pos < len && !isspace(s[pos])) pos++;
-      mat[src_id][dst_id] = w;
+      mat_[src_id][dst_id] = w;
       //      if (symm) {
-      mat[dst_id][src_id] = w;
+      mat_[dst_id][src_id] = w;
       //      }
     }
     ifs.peek();
@@ -230,8 +230,8 @@ Dwalk::load(
   }
   ifs.close();
   assert(lnodesz_ + unodesz_ == nodesz_);
-  lmat  = LabelMatrix(labelsz_+1, LabelArray());
-  lcmat = LabelMatrix(labelsz_+1, LabelArray());
+  lmat_  = LabelMatrix(labelsz_+1, LabelArray());
+  lcmat_ = LabelMatrix(labelsz_+1, LabelArray());
 
   ifs.open(label_fn);
   nodesz_ = 0;
@@ -244,36 +244,24 @@ Dwalk::load(
     nodesz_++;
     if (len != 1 || (len >= 1 && isdigit(s[0]))) {
       unsigned int label = atoi(s);
-      lmat[label].push_back(nodesz_);
+      lmat_[label].push_back(nodesz_);
     }
   }
   ifs.close();
   for (unsigned int lid = 1; lid <= labelsz_; lid++) {
     unsigned int indx = 0;
-    const unsigned int indx_max = lmat[lid].size() - 1;
+    const unsigned int indx_max = lmat_[lid].size() - 1;
     for (unsigned int nid = 1; nid <= nodesz_; nid++) {
-      if (indx <= indx_max && lmat[lid][indx] == nid) {
+      if (indx <= indx_max && lmat_[lid][indx] == nid) {
         indx++;
       } else {
-        lcmat[lid].push_back(nid);
+        lcmat_[lid].push_back(nid);
       }
     }
   }
   // normalized
-  normalize(mat);
+  normalize();
 }
-/*
-void
-Dwalk::cv(
-    const unsigned int l_small,
-    const unsigned int l_large,
-    const std::string& pref_fn,
-    const bool map_predict)
-{
-
-}
-*/
-
 /**
  * apply MAP decision rule and output result
  */
@@ -302,7 +290,7 @@ Dwalk::decision(
   }
   // predict
   for (unsigned int i = 1; i <= labelsz_; i++) {
-    prob_y[i] = static_cast<double>(lmat[i].size()) / lnodesz_;
+    prob_y[i] = static_cast<double>(lmat_[i].size()) / lnodesz_;
   }
   for (unsigned int i = 1; i <= nodesz_; i++) {
     unsigned int predict_tmp = -1;
@@ -362,7 +350,7 @@ Dwalk::original(
   NodeSet uset, lset, dummyset;
   std::vector<unsigned int> dummy(nodesz_);
   for (unsigned int lid = 1; lid <= labelsz_; lid++) {
-    lset.insert(lmat[lid].begin(), lmat[lid].end());
+    lset.insert(lmat_[lid].begin(), lmat_[lid].end());
   }
   generate(dummy.begin(), dummy.end(), IncrementalGen<unsigned int>(1));
   uset.insert(dummy.begin(), dummy.end());
@@ -384,8 +372,8 @@ Dwalk::original(
       // calc denom factor
       double denom = 0;
       for (unsigned l = 1; l <= bounded_length; l++) {
-        for (unsigned j = 0; j < lmat[i].size(); j++) {
-          const unsigned int node_id = lmat[i][j];
+        for (unsigned j = 0; j < lmat_[i].size(); j++) {
+          const unsigned int node_id = lmat_[i][j];
           denom += alpha_[l][i][node_id];
         }
       }
@@ -431,7 +419,7 @@ Dwalk::fixedAlgorithmA(
   NodeSet uset, lset, dummyset;
   std::vector<unsigned int> dummy(nodesz_);
   for (unsigned int lid = 1; lid <= labelsz_; lid++) {
-    lset.insert(lmat[lid].begin(), lmat[lid].end());
+    lset.insert(lmat_[lid].begin(), lmat_[lid].end());
   }
   generate(dummy.begin(), dummy.end(), IncrementalGen<unsigned int>(1));
   uset.insert(dummy.begin(), dummy.end());
@@ -445,7 +433,6 @@ Dwalk::fixedAlgorithmA(
   calcAlpha(bounded_length);
   calcBeta (bounded_length);
   calcGamma(uset, bounded_length);
-  std::cout << "proposed method: " << std::endl;
   std::cout << "calc bounded dwalks betweenness" << std::endl;
   Matrix b(labelsz_+1, Array(nodesz_ + 1, 0.0));
   // calc denom and put b[i][0]
@@ -491,7 +478,7 @@ Dwalk::fixedAlgorithmB(
   NodeSet uset, lset, dummyset;
   std::vector<unsigned int> dummy(nodesz_);
   for (unsigned int lid = 1; lid <= labelsz_; lid++) {
-    lset.insert(lmat[lid].begin(), lmat[lid].end());
+    lset.insert(lmat_[lid].begin(), lmat_[lid].end());
   }
   generate(dummy.begin(), dummy.end(), IncrementalGen<unsigned int>(1));
   uset.insert(dummy.begin(), dummy.end());
