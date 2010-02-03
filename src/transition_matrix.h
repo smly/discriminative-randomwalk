@@ -22,7 +22,9 @@ public:
 
 private:
   transImplType type_;
+  // transition matrix interface
   TransMatrixImpl * impl_;
+  // transition matrix implementation
   class AdjcencyImpl;
   class LinkedListImpl;
 };

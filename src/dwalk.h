@@ -11,12 +11,10 @@
 #include <cmath>
 #include <cassert>
 
+#include "matrix.h"
+
 namespace gll {
 
-typedef std::vector<double> Array;
-typedef std::vector<Array> Matrix;
-typedef std::vector<unsigned int> LabelArray;
-typedef std::vector<LabelArray> LabelMatrix;
 typedef std::set<unsigned int> NodeSet;
 
 template <class T>
@@ -83,7 +81,6 @@ private:
   std::vector<Matrix> gamma_;
 
   // private func
-  void normalize();
   void calcAlpha(
       const unsigned int bounded_length);
   void calcBeta(

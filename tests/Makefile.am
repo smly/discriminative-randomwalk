@@ -7,8 +7,8 @@ bin_PROGRAMS = test_simple test_realdata
 
 test_simple_LDADD = $(GTEST_LIBS) $(GTEST_LDFLAGS)
 test_simple_CPPFLAGS = -I$(SRC_DIR) $(GTEST_CPPFLAGS)
-test_simple_SOURCES = test_simple.cc $(SRC_DIR)/dwalk.cc $(SRC_DIR)/dwalk_const.cc
+test_simple_SOURCES = test_simple.cc $(SRC_DIR)/dwalk.cc $(SRC_DIR)/dwalk_const.cc $(SRC_DIR)/matrix.cc
 
 test_realdata_LDADD = $(GTEST_LIBS) $(GTEST_LDFLAGS)
 test_realdata_CPPFLAGS = -I$(SRC_DIR) $(GTEST_CPPFLAGS)
-test_realdata_SOURCES = test_realdata.cc $(SRC_DIR)/dwalk.cc $(SRC_DIR)/dwalk_const.cc
+test_realdata_SOURCES = test_realdata.cc $(SRC_DIR)/dwalk.cc $(SRC_DIR)/dwalk_const.cc $(SRC_DIR)/matrix.cc
