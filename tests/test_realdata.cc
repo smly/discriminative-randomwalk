@@ -43,7 +43,7 @@ TEST_F(DwalkTest, TestFileLoadCheck)
     const char* label_filename = graph_fn[i].second.c_str();
     gll::Dwalk d;
     d.load(graph_filename, label_filename, true);// symm
-    d.show_info();
+    d.showInfo();
     const std::string pref_fn = ".tmp";
     d.original(10, pref_fn, true, false);
     ASSERT_TRUE(true);

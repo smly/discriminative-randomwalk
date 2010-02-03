@@ -11,12 +11,10 @@
 #include <cmath>
 #include <cassert>
 
+#include "matrix.h"
+
 namespace gll {
 
-typedef std::vector<double> Array;
-typedef std::vector<Array> Matrix;
-typedef std::vector<unsigned int> LabelArray;
-typedef std::vector<LabelArray> LabelMatrix;
 typedef std::set<unsigned int> NodeSet;
 
 template <class T>
@@ -42,46 +40,51 @@ public:
       const std::string& pref_fn,
       const bool denom_flag,
       const bool map_predict);
-  void fixed_algorithm_A(
+  void fixedAlgorithmA(
       const unsigned int bounded_length,
       const std::string& pref_fn,
       const bool map_predict);
-  void fixed_algorithm_B(
+  void fixedAlgorithmB(
       const unsigned int bounded_length,
       const std::string& pref_fn,
       const bool map_predict);
+  unsigned int crossValidation(
+      const unsigned int num_fold,
+      const unsigned int num_from,
+      const unsigned int num_to);
 
   // dwalk_const
-  void show_info() const;
-  void show_alphabeta(
+  void showInfo() const;
+  void showAlphabeta(
       const unsigned int t,
-      const std::string label,
-      const Matrix& mat) const;
-  void show_mat(const Matrix& mat) const;
-  void show_lmat(const LabelMatrix& lmat) const;
-  void show_betweenness(const Matrix& mat) const;
-  void show_predict(
+      const std::string label) const;
+  void showMat() const;
+  void showLmat() const;
+  void showBetweenness() const;
+  void showPredict(
       const std::vector<unsigned int>& predict) const;
-  const LabelArray get_complement_labeled_nodes (
+  const LabelArray getComplementLabeledNodes (
       const unsigned int label_id) const;
-  const LabelArray get_labeled_nodes (
+  const LabelArray getLabeledNodes (
       const unsigned int label_id) const;
 
 private:
   unsigned int nodesz_, lnodesz_, unodesz_;
   unsigned int labelsz_;
-  Matrix mat;
-  LabelMatrix lmat, lcmat;
+  Matrices m_;
+  // alpha forward variables
+  std::vector<Matrix> alpha_;
+  // beta backward variables
+  std::vector<Matrix> beta_;
+  // gamma backward variables (not appear in the paper)
+  std::vector<Matrix> gamma_;
 
-  void normalize(Matrix& mat);
-  void calc_alpha(
-      std::vector<Matrix>& alpha_v,
+  // private func
+  void calcAlpha(
       const unsigned int bounded_length);
-  void calc_beta(
-      std::vector<Matrix>& beta_v,
+  void calcBeta(
       const unsigned int bounded_length);
-  void calc_gamma(
-      std::vector<Matrix>& beta_v,
+  void calcGamma(
       const NodeSet& uset,
       const unsigned int bounded_length);
   void decision(
