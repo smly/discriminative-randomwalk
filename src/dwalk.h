@@ -71,8 +71,7 @@ public:
 private:
   unsigned int nodesz_, lnodesz_, unodesz_;
   unsigned int labelsz_;
-  Matrix mat_;
-  LabelMatrix lmat_, lcmat_;
+  Matrices m_;
   // alpha forward variables
   std::vector<Matrix> alpha_;
   // beta backward variables

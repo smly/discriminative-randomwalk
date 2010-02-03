@@ -2,7 +2,7 @@
 
 namespace gll {
 
-void Mat::load(
+void Matrices::load(
     const char* graph_fn,
     const char* label_fn,
     const bool symm)
@@ -112,11 +112,13 @@ void Mat::load(
       }
     }
   }
+  assert(lmat_.size() == labelsz_ + 1);
   // normalized
   normalize();
 }
 
-void Mat::normalize() {
+void Matrices::normalize()
+{
   const unsigned int nodesz_ = mat_.size() - 1;
   for (unsigned int i = 1; i <= nodesz_; i++) {
     double sum = 0.0;
@@ -130,6 +132,26 @@ void Mat::normalize() {
       }
     }
   }
+}
+
+unsigned int Matrices::getNodeSize() const
+{
+  return nodesz_;
+}
+
+unsigned int Matrices::getLabeledNodeSize() const
+{
+  return lnodesz_;
+}
+
+unsigned int Matrices::getUnlabeledNodeSize() const
+{
+  return unodesz_;
+}
+
+unsigned int Matrices::getLabelSize() const
+{
+  return labelsz_;
 }
 
 }

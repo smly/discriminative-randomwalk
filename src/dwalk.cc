@@ -19,11 +19,11 @@ void Dwalk::calcAlpha(
   std::cout << "calculate alpha variables: ";
   for (unsigned int lid = 1; lid <= labelsz_; lid++) {
     for (unsigned int sid = 1; sid <= nodesz_; sid++) {
-      const unsigned int nysz = lmat_[lid].size();
+      const unsigned int nysz = m_.lmat_[lid].size();
       double sum = 0.0;
-      for (unsigned int i = 0; i < lmat_[lid].size(); i++) {
-        const unsigned int did = lmat_[lid][i];
-        sum += (1.0 / nysz) * mat_[did][sid];
+      for (unsigned int i = 0; i < m_.lmat_[lid].size(); i++) {
+        const unsigned int did = m_.lmat_[lid][i];
+        sum += (1.0 / nysz) * m_.mat_[did][sid];
         assert(isnan(sum) == 0);
       }
       alpha[lid][sid] = sum;
@@ -35,9 +35,9 @@ void Dwalk::calcAlpha(
     for (unsigned int lid = 1; lid <= labelsz_; lid++) {
       for (unsigned int sid = 1; sid <= nodesz_; sid++) {
         double sum = 0.0;
-        for (unsigned int i = 0; i < lcmat_[lid].size(); i++) {
-          const unsigned int did = lcmat_[lid][i];
-          sum += alpha[lid][did] * mat_[did][sid];
+        for (unsigned int i = 0; i < m_.lcmat_[lid].size(); i++) {
+          const unsigned int did = m_.lcmat_[lid][i];
+          sum += alpha[lid][did] * m_.mat_[did][sid];
           assert(isnan(sum) == 0);
         }
         alpha_next[lid][sid] = sum;
@@ -61,9 +61,9 @@ void Dwalk::calcBeta(
   for (unsigned lid = 1; lid <= labelsz_; lid++) {
     for (unsigned sid = 1; sid <= nodesz_; sid++) {
       double sum = 0.0;
-      for (unsigned int i = 0; i < lmat_[lid].size(); i++) {
-        const unsigned int did = lmat_[lid][i];
-        sum += mat_[sid][did];
+      for (unsigned int i = 0; i < m_.lmat_[lid].size(); i++) {
+        const unsigned int did = m_.lmat_[lid][i];
+        sum += m_.mat_[sid][did];
         assert(isnan(sum) == 0);
       }
       beta[lid][sid] = sum;
@@ -75,9 +75,9 @@ void Dwalk::calcBeta(
     for (unsigned int lid = 1; lid <= labelsz_; lid++) {
       for (unsigned int sid = 1; sid <= nodesz_; sid++) {
         double sum = 0.0;
-        for (unsigned int i = 0; i < lcmat_[lid].size(); i++) {
-          const unsigned int did = lcmat_[lid][i];
-          sum += beta[lid][did] * mat_[sid][did];
+        for (unsigned int i = 0; i < m_.lcmat_[lid].size(); i++) {
+          const unsigned int did = m_.lcmat_[lid][i];
+          sum += beta[lid][did] * m_.mat_[sid][did];
           assert(isnan(sum) == 0);
         }
         beta_next[lid][sid] = sum;
@@ -103,7 +103,7 @@ void Dwalk::calcGamma(
       double sum = 0.0;
       for (NodeSet::iterator it = uset.begin(); it != uset.end(); it++) {
         const unsigned int did = *it;
-        sum += mat_[sid][did];
+        sum += m_.mat_[sid][did];
         assert(isnan(sum) == 0);
       }
       gamma[lid][sid] = sum;
@@ -115,9 +115,9 @@ void Dwalk::calcGamma(
     for (unsigned int lid = 1; lid <= labelsz_; lid++) {
       for (unsigned int sid = 1; sid <= nodesz_; sid++) {
         double sum = 0.0;
-        for (unsigned int i = 0; i < lcmat_[lid].size(); i++) {
-          const unsigned int did = lcmat_[lid][i];
-          sum += gamma[lid][did] * mat_[sid][did];
+        for (unsigned int i = 0; i < m_.lcmat_[lid].size(); i++) {
+          const unsigned int did = m_.lcmat_[lid][i];
+          sum += gamma[lid][did] * m_.mat_[sid][did];
           assert(isnan(sum) == 0);
         }
         gamma_next[lid][sid] = sum;
@@ -136,15 +136,13 @@ Dwalk::load(
     const char* label_fn,
     const bool symm)
 {
-  Mat m;
-  m.load(graph_fn, label_fn, symm);
-  mat_ = m.mat_;
-  nodesz_ = m.nodesz_;
-  lnodesz_ = m.lnodesz_;
-  unodesz_ = m.unodesz_;
-  labelsz_ = m.labelsz_;
-  lmat_ = m.lmat_;
-  lcmat_ = m.lcmat_;
+  m_.load(graph_fn, label_fn, symm);
+  nodesz_  = m_.getNodeSize();
+  lnodesz_ = m_.getLabeledNodeSize();
+  unodesz_ = m_.getUnlabeledNodeSize();
+  labelsz_ = m_.getLabelSize();
+
+  assert(m_.lmat_.size() == labelsz_ + 1);
 }
 /**
  * apply MAP decision rule and output result
@@ -174,7 +172,7 @@ Dwalk::decision(
   }
   // predict
   for (unsigned int i = 1; i <= labelsz_; i++) {
-    prob_y[i] = static_cast<double>(lmat_[i].size()) / lnodesz_;
+    prob_y[i] = static_cast<double>(m_.lmat_[i].size()) / lnodesz_;
   }
   for (unsigned int i = 1; i <= nodesz_; i++) {
     unsigned int predict_tmp = -1;
@@ -230,11 +228,13 @@ Dwalk::original(
     const bool denom_flag,
     const bool map_predict)
 {
+
+  assert(m_.lmat_.size() == labelsz_ + 1);
   // calc uset and lset
   NodeSet uset, lset, dummyset;
   std::vector<unsigned int> dummy(nodesz_);
   for (unsigned int lid = 1; lid <= labelsz_; lid++) {
-    lset.insert(lmat_[lid].begin(), lmat_[lid].end());
+    lset.insert(m_.lmat_[lid].begin(), m_.lmat_[lid].end());
   }
   generate(dummy.begin(), dummy.end(), IncrementalGen<unsigned int>(1));
   uset.insert(dummy.begin(), dummy.end());
@@ -245,7 +245,7 @@ Dwalk::original(
   // calculate forward variable alpha
   // labelsz_, nodesz, mat, lmat
   alpha_ = std::vector<Matrix>(bounded_length + 1);
-  beta_ = std::vector<Matrix>(bounded_length + 1);
+  beta_  = std::vector<Matrix>(bounded_length + 1);
   calcAlpha(bounded_length);
   calcBeta (bounded_length);
   // calc bounded dwalks betweeness
@@ -256,8 +256,8 @@ Dwalk::original(
       // calc denom factor
       double denom = 0;
       for (unsigned l = 1; l <= bounded_length; l++) {
-        for (unsigned j = 0; j < lmat_[i].size(); j++) {
-          const unsigned int node_id = lmat_[i][j];
+        for (unsigned j = 0; j < m_.lmat_[i].size(); j++) {
+          const unsigned int node_id = m_.lmat_[i][j];
           denom += alpha_[l][i][node_id];
         }
       }
@@ -303,7 +303,7 @@ Dwalk::fixedAlgorithmA(
   NodeSet uset, lset, dummyset;
   std::vector<unsigned int> dummy(nodesz_);
   for (unsigned int lid = 1; lid <= labelsz_; lid++) {
-    lset.insert(lmat_[lid].begin(), lmat_[lid].end());
+    lset.insert(m_.lmat_[lid].begin(), m_.lmat_[lid].end());
   }
   generate(dummy.begin(), dummy.end(), IncrementalGen<unsigned int>(1));
   uset.insert(dummy.begin(), dummy.end());
@@ -312,7 +312,7 @@ Dwalk::fixedAlgorithmA(
                  std::inserter(dummyset, dummyset.end()));
   uset.swap(dummyset);
   alpha_ = std::vector<Matrix>(bounded_length + 1);
-  beta_ = std::vector<Matrix>(bounded_length + 1);
+  beta_  = std::vector<Matrix>(bounded_length + 1);
   gamma_ = std::vector<Matrix>(bounded_length + 1);
   calcAlpha(bounded_length);
   calcBeta (bounded_length);
@@ -362,7 +362,7 @@ Dwalk::fixedAlgorithmB(
   NodeSet uset, lset, dummyset;
   std::vector<unsigned int> dummy(nodesz_);
   for (unsigned int lid = 1; lid <= labelsz_; lid++) {
-    lset.insert(lmat_[lid].begin(), lmat_[lid].end());
+    lset.insert(m_.lmat_[lid].begin(), m_.lmat_[lid].end());
   }
   generate(dummy.begin(), dummy.end(), IncrementalGen<unsigned int>(1));
   uset.insert(dummy.begin(), dummy.end());
@@ -371,7 +371,7 @@ Dwalk::fixedAlgorithmB(
                   std::inserter(dummyset, dummyset.end()));
   uset.swap(dummyset);
   alpha_ = std::vector<Matrix>(bounded_length + 1);
-  beta_ = std::vector<Matrix>(bounded_length + 1);
+  beta_  = std::vector<Matrix>(bounded_length + 1);
   gamma_ = std::vector<Matrix>(bounded_length + 1);
   calcAlpha(bounded_length);
   calcBeta(bounded_length);
