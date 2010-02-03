@@ -56,9 +56,9 @@ main(int argc, char** argv)
 
   gll::Dwalk d;
   d.load(input_fn.c_str(), label_fn.c_str(), symm);
-  d.show_info();
+  d.showInfo();
   if (fixed_algorithm) {
-    d.fixed_algorithm_A(wl, pref_fn, map_pred);
+    d.fixedAlgorithmA(wl, pref_fn, map_pred);
   } else {
     d.original(wl, pref_fn, true, map_pred);
   }
