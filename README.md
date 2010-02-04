@@ -1,55 +1,41 @@
-README
+dwalk
 ======
 
-not complete yet!
-not complete yet!!
-not complete yet!!!
-not complete yet!!!!
-not complete yet!!!!! :p
+dwalk -- an implementation of discriminative random walk ([Callut+, ECML/PKDD 2008])
 
-# build
+# Overview
 
-    $ autoreconf -ivf
+D-walk is a novel technique to tackle semi-supervised classification
+ problems in large graphs, proposed in [Callut et al. ECML/PKDD 2008].
+D-walks use betweenness measure based on passage times during random walks
+ of bounded lengths. Forward and backward recurrences are derived to
+ efficiently compute the passage times.
+
+# Format of Input Data
+
+(to be appear)
+
+# Install
+
     $ ./configure
     $ make
 
-# usage
+# Usage
 
-## example
+    $ ./dwalk -i inputfile -l labelfile -o output_prefix -w bounded_length
 
-    $ ./src/dwalk -i input_filename -l label_filename -o output_prefix
-    Number of nodes:           9
+## Example
+
+    $ ./dwalk -i input_filename -l label_filename -o output_prefix -w 5
+    Number of nodes:           9                                                             
     Number of labels:          2
-    Number of labeled nodes:   2
-    Number of unlabeled nodes: 7
-    calculate alpha variables: ....done
-    calculate beta variables:  ....done
-    prob_y[1] = 0.333333
-    prob_y[2] = 0.666667
-    [> betweenness:
-    0.218 0.152 0.244 0.031 0.001 0.000 0.000 0.002 0.000 
-    0.000 0.000 0.017 0.802 1.898 1.034 1.453 0.870 0.375 
-    [> normalized:
-    1.000 1.000 0.933 0.037 0.001 0.000 0.000 0.002 0.000 
-    0.000 0.000 0.067 0.963 0.999 1.000 1.000 0.998 1.000 
-    [> classfied result using a MAP:
-    1 1 1 2 2 2 2 2 2 
-    calculate alpha variables: ..........done
-    calculate beta variables:  ..........done
-    prob_y[1] = 0.333
-    prob_y[2] = 0.667
-    [> betweenness:
-    0.269 0.246 0.350 0.122 0.036 0.014 0.014 0.049 0.020 
-    0.065 0.065 0.151 0.385 0.569 0.361 0.352 0.310 0.150 
-    [> normalized:
-    0.804 0.790 0.698 0.241 0.060 0.037 0.038 0.136 0.120 
-    0.196 0.210 0.302 0.759 0.940 0.963 0.962 0.864 0.880 
-    [> classfied result using a MAP:
-    1 1 1 2 2 2 2 2 2
+    Number of labeled nodes:   3
+    Number of unlabeled nodes: 6
+    calculate alpha variables: .....done
+    calculate beta variables:  .....done
+    calc bounded dwalks betweeness
 
-## graph data
-
-    $ cat tests/dataset1/sample.in
+    $ cat input_filename
     2:1 3:1
     1:1 3:1
     1:1 2:1 4:1
@@ -60,9 +46,7 @@ not complete yet!!!!! :p
     4:1 9:1
     8:1
 
-## label data
-
-    $ cat tests/dataset1/sample.label 
+    $ cat label_filename
     .
     1
     .
@@ -73,9 +57,39 @@ not complete yet!!!!! :p
     .
     2
 
-# test
+    $ cat output_prefix.weight
+    1.000000000 0.000000000
+    1.000000000 0.000000000
+    1.000000000 0.000000000
+    0.230733215 0.769266785
+    0.000000000 1.000000000
+    0.000000000 1.000000000
+    0.000000000 1.000000000
+    0.000000000 1.000000000
+    0.000000000 1.000000000
 
-    $ autoreconf -ivf
-    $ ./configure --enable-devel
-    $ make check
-    $ make memcheck
+    $ cat output_prefix.result
+    1
+    1
+    1
+    2
+    2
+    2
+    2
+    2
+    2
+
+# Reference
+
+Jerome Callut, Kevin Francoisse, Marco Saerens, Pierre Dupont, "Semi-supervised Classification from Discriminative Random Walks", ECML/PKDD 2008.
+
+# Author
+
+  Kohei Ozaki <kohei-o@is.naist.jp>
+  Nara Institute of Science and Technology, 
+  Graduate School of Information Science, 
+  Computational Linguistics Laboratory 
+
+# License
+
+BSD3 License
