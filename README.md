@@ -81,14 +81,16 @@ D-walks use betweenness measure based on passage times during random walks
 
 # Reference
 
-Jerome Callut, Kevin Francoisse, Marco Saerens, Pierre Dupont, "Semi-supervised Classification from Discriminative Random Walks", ECML/PKDD 2008.
+Jerome Callut, Kevin Francoisse, Marco Saerens, Pierre Dupont,
+"Semi-supervised Classification from Discriminative Random Walks",
+ECML/PKDD 2008.
 
 # Author
 
-  Kohei Ozaki <kohei-o@is.naist.jp>
-  Nara Institute of Science and Technology, 
-  Graduate School of Information Science, 
-  Computational Linguistics Laboratory 
+    Kohei Ozaki <kohei-o@is.naist.jp>
+    Nara Institute of Science and Technology, 
+    Graduate School of Information Science, 
+    Computational Linguistics Laboratory 
 
 # License
 
